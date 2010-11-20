@@ -1,0 +1,9 @@
+include README
+include COPYING
+include NEWS
+include setup.py
+include src/smf.pyx
+include src/smf.pxd
+include src/smf.c
+include examples/*.py
+include test/test_smf.py
