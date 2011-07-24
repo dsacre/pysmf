@@ -34,7 +34,7 @@ pkgconfig('smf')
 
 setup (
     name = 'pysmf',
-    version = '0.1.0',
+    version = '20101120',
     author = 'Dominic Sacre',
     author_email = 'dominic.sacre@gmx.de',
     url = 'http://das.nasophon.de/pysmf/',
