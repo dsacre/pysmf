@@ -31,6 +31,7 @@ A module for reading and writing standard MIDI files, based on libsmf.
 
 from smf cimport *
 from stdlib cimport malloc, free
+from cpython cimport PY_VERSION_HEX
 
 
 cdef list _index_helper(n, int length):
@@ -44,16 +45,38 @@ cdef list _index_helper(n, int length):
         else:
             raise IndexError
 
-cdef str _data_to_bytestring(data):
+cdef bytes _data_to_bytestring(data):
     """convert a python list/str to a bytestring"""
-    if isinstance(data, str):
+    if isinstance(data, bytes):
         return data
+    elif isinstance(data, unicode):
+        return data.encode('latin1')
     else:
-        return ''.join(map(chr, data))
+        if PY_VERSION_HEX >= 0x03000000:
+            return ''.join(map(chr, data)).encode('latin1')
+        else:
+            return ''.join(map(chr, data))
+
+def data_to_bytestring(data):
+    return _data_to_bytestring(data)
 
 cdef list _binary_to_list(unsigned char *buf, int length):
     """convert a C array to a python list"""
     return [buf[i] for i in range(length)]
+
+cdef str _decode(s):
+    """convert to standard string type, depending on python version"""
+    if PY_VERSION_HEX >= 0x03000000 and isinstance(s, bytes):
+        return s.decode()
+    else:
+        return s
+
+cdef bytes _encode(s):
+    """convert unicode to bytes"""
+    if isinstance(s, unicode):
+        return s.encode()
+    else:
+        return s
 
 
 cdef class _SMFReference:
@@ -97,7 +120,8 @@ cdef class SMF(_SMFReference):
 
         if filename:
             # load from MIDI file
-            self._smf = smf_load(filename)
+            s = _encode(filename)
+            self._smf = smf_load(s)
             if not self._smf:
                 raise IOError("couldn't load MIDI file: %s" % filename)
         elif data:
@@ -125,7 +149,8 @@ cdef class SMF(_SMFReference):
         save(self, filename) -> None
         Save the SMF object to a file.
         """
-        if smf_save(self._smf, filename):
+        s = _encode(filename)
+        if smf_save(self._smf, s):
             raise IOError("couldn't save MIDI file: %s" % filename)
 
 #    def dump(self):
@@ -275,6 +300,8 @@ cdef class Track(_SMFTrackReference):
             smf_track_add_event_pulses(self._track, ev, pulses)
         elif seconds != None:
             smf_track_add_event_seconds(self._track, ev, seconds)
+        else:
+            raise ValueError("pulses or seconds must be specified")
 
     property events:
         """A list-like object providing access to all events on this track."""
@@ -322,28 +349,31 @@ cdef class Event(_SMFEventReference):
     Create a new MIDI event.
     """
     def __init__(self, data):
+        self._smf = NULL
+        self._event = NULL
+
         if not data:
             # caller needs to take care of initialisation
             return
-
+        #
         # do not call base class __init__()
-        self._smf = NULL
+        #
         s = _data_to_bytestring(data)
         self._event = smf_event_new_from_pointer(<char *>s, len(s))
         # refuse to create invalid MIDI events
         if not smf_event_is_valid(self._event):
-            raise ValueError
+            raise ValueError("MIDI event is invalid")
 
     def __dealloc__(self):
-        if not self._smf:
+        if not self._smf and self._event:
             smf_event_delete(self._event)
 
     def decode(self):
         cdef char *c = smf_event_decode(self._event)
         if c:
-            s = str(c)
+            s = bytes(c)
             free(c)
-            return s
+            return _decode(s)
         else:
             return ''
 

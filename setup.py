@@ -3,7 +3,11 @@
 
 from distutils.core import setup, Extension
 import sys
-from commands import getstatusoutput
+
+if sys.version_info >= (3,):
+    from subprocess import getstatusoutput
+else:
+    from commands import getstatusoutput
 
 try:
     from Cython.Distutils import build_ext
