@@ -14,8 +14,8 @@ class TestLoadSave:
         assert all(len(tr.events) == 0 for tr in b.tracks)
 
     def test_load(self):
-        a = smf.SMF('foo.mid')
-        assert len(a.tracks) == 43
+        a = smf.SMF('test.mid')
+        assert len(a.tracks) == 1
 
         py.test.raises(IOError, smf.SMF, 'nonexistent.mid')
 
@@ -25,17 +25,17 @@ class TestLoadSave:
         assert len(a.tracks) == 1
 
     def test_save(self):
-        a = smf.SMF('foo.mid')
-        a.save('bar.mid')
-        assert file('foo.mid').read() == file('bar.mid').read()
+        a = smf.SMF('test.mid')
+        a.save('test2.mid')
+        assert file('test.mid').read() == file('test2.mid').read()
 
         py.test.raises(IOError, a.save, '')
 
         b = smf.SMF()
-        py.test.raises(IOError, b.save, 'bar.mid')
+        py.test.raises(IOError, b.save, 'test2.mid')
 
 #    def test_save_to_memory(self):
-#        a = smf.SMF('foo.mid')
+#        a = smf.SMF('test.mid')
 #        buf = a.dump()
 #        assert len(buf) == 2277
 
