@@ -7,3 +7,4 @@ include src/smf.pxd
 include src/smf.c
 include examples/*.py
 include test/test_smf.py
+include test/test.mid
