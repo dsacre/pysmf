@@ -30,7 +30,7 @@ A module for reading and writing standard MIDI files, based on libsmf.
 """
 
 from smf cimport *
-from stdlib cimport malloc, free
+from libc.stdlib cimport malloc, free
 from cpython cimport PY_VERSION_HEX
 
 
