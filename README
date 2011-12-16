@@ -1,6 +1,6 @@
 pysmf - a Python module for Standard MIDI Files, based on libsmf
 
-Copyright (C) 2009-2010 Dominic Sacré <dominic.sacre@gmx.de>
+Copyright (C) 2009-2011  Dominic Sacré  <dominic.sacre@gmx.de>
 
 
 To build and install, run:

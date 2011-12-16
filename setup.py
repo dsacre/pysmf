@@ -38,11 +38,11 @@ pkgconfig('smf')
 
 setup (
     name = 'pysmf',
-    version = '20101120',
+    version = '0.1.0',
     author = 'Dominic Sacre',
     author_email = 'dominic.sacre@gmx.de',
     url = 'http://das.nasophon.de/pysmf/',
-    description = 'A module for reading and writing standard MIDI files, based on libsmf',
+    description = 'a Python module for standard MIDI files, based on libsmf',
     license = 'BSD',
     ext_modules = [
         Extension(
