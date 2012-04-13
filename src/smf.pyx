@@ -34,7 +34,7 @@ from libc.stdlib cimport malloc, free
 from cpython cimport PY_VERSION_HEX
 
 
-cdef list _index_helper(n, int length):
+cdef list _index_helper(n, int length, char *what):
     """simplify handling of single indices and slices by returning a list of all selected indices"""
     if isinstance(n, slice):
         return range(*n.indices(length))
@@ -43,7 +43,7 @@ cdef list _index_helper(n, int length):
         if indices[0] != indices[1]:
             return [indices[0]]
         else:
-            raise IndexError
+            raise IndexError("invalid %s index" % what)
 
 cdef bytes _data_to_bytestring(data):
     """convert a python list/str to a bytestring"""
@@ -237,7 +237,7 @@ cdef class TrackList(_SMFReference):
         return self._smf.number_of_tracks
 
     def __getitem__(self, n):
-        indices = _index_helper(n, len(self))
+        indices = _index_helper(n, len(self), "track")
         if isinstance(n, slice):
             return [Track(self, i) for i in indices]
         else:
@@ -245,7 +245,7 @@ cdef class TrackList(_SMFReference):
 
     def __delitem__(self, n):
         # delete in reverse order so the indices of subsequent tracks don't change
-        for i in sorted(_index_helper(n, len(self)), reverse=True):
+        for i in sorted(_index_helper(n, len(self), "track"), reverse=True):
             smf_track_delete(smf_get_track_by_number(self._smf, i + 1))
 
     def insert(self, index):
@@ -320,7 +320,7 @@ cdef class TrackEventList(_SMFTrackReference):
         return self._track.number_of_events
 
     def __getitem__(self, n):
-        indices = _index_helper(n, len(self))
+        indices = _index_helper(n, len(self), "event")
         if isinstance(n, slice):
             return [_event_reference(self, self._track.track_number - 1, i) for i in indices]
         else:
@@ -328,7 +328,7 @@ cdef class TrackEventList(_SMFTrackReference):
 
     def __delitem__(self, n):
         # delete in reverse order so the indices of subsequent events don't change
-        for i in sorted(_index_helper(n, len(self)), reverse=True):
+        for i in sorted(_index_helper(n, len(self), "event"), reverse=True):
             smf_event_delete(smf_track_get_event_by_number(self._track, i + 1))
 
     def __iter__(self):
