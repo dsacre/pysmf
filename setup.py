@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup, Extension
 import sys
+
+try:
+    from setuptools import setup, Extension
+    from setuptools.command.test import test as TestCommand
+    have_setuptools = True
+except ImportError:
+    from distutils.core import setup, Extension
+    have_setuptools = False
 
 if sys.version_info >= (3,):
     from subprocess import getstatusoutput
@@ -29,6 +36,25 @@ def pkgconfig(pkg):
         elif opt == '-L':
             library_dirs.append(val)
 
+cmdclass = {'build_ext': build_ext} if with_cython else {}
+
+if have_setuptools:
+    class PyTest(TestCommand):
+        def finalize_options(self):
+            TestCommand.finalize_options(self)
+            self.test_args = []
+            self.test_suite = True
+        def run_tests(self):
+            #import here, cause outside the eggs aren't loaded
+            import pytest
+            pytest.main(self.test_args)
+
+    cmdclass['test'] = PyTest
+    extra_setup_opts = {'tests_require': ['pytest']}
+else:
+    extra_setup_opts = {}
+
+
 include_dirs = []
 libraries = []
 library_dirs = []
@@ -36,7 +62,7 @@ library_dirs = []
 pkgconfig('smf')
 
 
-setup (
+setup(
     name = 'pysmf',
     version = '0.1.0',
     author = 'Dominic Sacre',
@@ -54,5 +80,6 @@ setup (
             extra_compile_args = ['-Werror-implicit-function-declaration'],
         )
     ],
-    cmdclass = {'build_ext': build_ext} if with_cython else {},
+    cmdclass = cmdclass,
+    **extra_setup_opts
 )

@@ -1,2 +1,9 @@
 /build
+/dist
 /src/smf.c
+/test/__pycache__
+/test/test2.mid
+pysmf.egg-info
+pytest-*.egg
+smf*.so
+
