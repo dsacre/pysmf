@@ -37,7 +37,7 @@ from cpython cimport PY_VERSION_HEX
 cdef list _index_helper(n, int length, char *what):
     """simplify handling of single indices and slices by returning a list of all selected indices"""
     if isinstance(n, slice):
-        return range(*n.indices(length))
+        return list(range(*n.indices(length)))
     else:
         indices = slice(n, n + 1).indices(length)
         if indices[0] != indices[1]:
@@ -55,7 +55,7 @@ cdef bytes _data_to_bytestring(data):
         if PY_VERSION_HEX >= 0x03000000:
             return ''.join(map(chr, data)).encode('latin1')
         else:
-            return ''.join(map(chr, data))
+            return b''.join(map(chr, data))
 
 def data_to_bytestring(data):
     return _data_to_bytestring(data)
