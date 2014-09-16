@@ -3,7 +3,8 @@ from os.path import dirname, join
 import py.test
 import smf
 
-EMPTY_1_TRACK_120_PPQN = 'MThd\x00\x00\x00\x06\x00\x00\x00\x01\x00\x78MTrk\x00\x00\x00\x04\x00\xff\x2f\x00'
+EMPTY_1_TRACK_120_PPQN = ('MThd\x00\x00\x00\x06\x00\x00\x00\x01\x00\x78'
+                          'MTrk\x00\x00\x00\x04\x00\xff\x2f\x00')
 TEST_MID1 = join(dirname(__file__), 'test.mid')
 TEST_MID2 = join(dirname(__file__), 'test2.mid')
 
@@ -58,12 +59,14 @@ class TestTracks:
         assert len(self.smf.tracks[4].events) == 0
         self.smf.add_track(2)
         assert len(self.smf.tracks) == 6
-        assert all((tr.track_number == n) for n, tr in enumerate(self.smf.tracks))
+        assert all((tr.track_number == n)
+                    for n, tr in enumerate(self.smf.tracks))
 
     def test_remove_track(self):
         del self.smf.tracks[1]
         assert len(self.smf.tracks) == 3
-        assert all((tr.track_number == n) for n, tr in enumerate(self.smf.tracks))
+        assert all((tr.track_number == n)
+                    for n, tr in enumerate(self.smf.tracks))
 
     def test_track_slice(self):
         tracks = self.smf.tracks[1:3]

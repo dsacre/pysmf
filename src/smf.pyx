@@ -35,7 +35,8 @@ from cpython cimport PY_VERSION_HEX
 
 
 cdef list _index_helper(n, int length, char *what):
-    """simplify handling of single indices and slices by returning a list of all selected indices"""
+    """simplify handling of single indices and slices by returning a list
+    of all selected indices"""
     if isinstance(n, slice):
         return list(range(*n.indices(length)))
     else:
@@ -95,9 +96,12 @@ cdef class _SMFTrackReference(_SMFReference):
 cdef class _SMFEventReference(_SMFReference):
     """base class for all classes referencing a particular event"""
     cdef smf_event_t *_event
-    def __init__(self, _SMFReference parent not None, int track_number, int event_number):
+    def __init__(self, _SMFReference parent not None, int track_number,
+                                                      int event_number):
         _SMFReference.__init__(self, parent)
-        self._event = smf_track_get_event_by_number(smf_get_track_by_number(parent._smf, track_number + 1), event_number + 1)
+        self._event = smf_track_get_event_by_number(
+                        smf_get_track_by_number(parent._smf, track_number + 1),
+                        event_number + 1)
 
 
 # forward declarations
@@ -113,9 +117,11 @@ cdef class SMF(_SMFReference):
     SMF(filename) -> SMF object
     SMF(data=...) -> SMF object
     SMF(number_of_tracks=None, ppqn=None) -> SMF object
-    Create a new SMF object, optionally loading MIDI data from a file or from memory.
+    Create a new SMF object, optionally loading MIDI data from a file or
+    from memory.
     """
-    def __init__(self, filename=None, *, data=None, number_of_tracks=None, ppqn=None):
+    def __init__(self, filename=None, *, data=None, number_of_tracks=None,
+                                                    ppqn=None):
         assert not (data and filename)
 
         if filename:
@@ -226,7 +232,8 @@ cdef class EventIterator(_SMFReference):
     def __next__(self):
         cdef smf_event_t *ev = smf_get_next_event(self._smf)
         if ev:
-            return _event_reference(self, ev.track_number - 1, ev.event_number - 1)
+            return _event_reference(self, ev.track_number - 1,
+                                    ev.event_number - 1)
         else:
             raise StopIteration
 
@@ -244,7 +251,8 @@ cdef class TrackList(_SMFReference):
             return Track(self, indices[0])
 
     def __delitem__(self, n):
-        # delete in reverse order so the indices of subsequent tracks don't change
+        # delete in reverse order so the indices of subsequent tracks don't
+        # change
         for i in sorted(_index_helper(n, len(self), "track"), reverse=True):
             smf_track_delete(smf_get_track_by_number(self._smf, i + 1))
 
@@ -262,7 +270,8 @@ cdef class TrackList(_SMFReference):
 
         # store pointers to all tracks after index, and detach those tracks
         cdef int num_tracks_after = len(self) - index
-        cdef smf_track_t **tracks_after = <smf_track_t**>malloc(num_tracks_after * sizeof(smf_track_t*))
+        cdef smf_track_t **tracks_after = <smf_track_t**>malloc(
+                                       num_tracks_after * sizeof(smf_track_t*))
         for 0 <= n < num_tracks_after:
             tracks_after[n] = smf_get_track_by_number(self._smf, index + 1)
             smf_track_remove_from_smf(tracks_after[n])
@@ -294,8 +303,11 @@ cdef class Track(_SMFTrackReference):
         add_event(self, event, pulses=None, seconds=None) -> None
         Add an event to this track.
         """
-        assert (pulses != None or seconds != None) and not (pulses != None and seconds != None)
-        cdef smf_event_t *ev = smf_event_new_from_pointer(event._event.midi_buffer, event._event.midi_buffer_length)
+        assert ((pulses != None or seconds != None) and
+                not (pulses != None and seconds != None))
+        cdef smf_event_t *ev = smf_event_new_from_pointer(
+                                            event._event.midi_buffer,
+                                            event._event.midi_buffer_length)
         if pulses != None:
             smf_track_add_event_pulses(self._track, ev, pulses)
         elif seconds != None:
@@ -322,12 +334,15 @@ cdef class TrackEventList(_SMFTrackReference):
     def __getitem__(self, n):
         indices = _index_helper(n, len(self), "event")
         if isinstance(n, slice):
-            return [_event_reference(self, self._track.track_number - 1, i) for i in indices]
+            return [_event_reference(self, self._track.track_number - 1, i)
+                        for i in indices]
         else:
-            return _event_reference(self, self._track.track_number - 1, indices[0])
+            return _event_reference(self, self._track.track_number - 1,
+                                          indices[0])
 
     def __delitem__(self, n):
-        # delete in reverse order so the indices of subsequent events don't change
+        # delete in reverse order so the indices of subsequent events don't
+        # change
         for i in sorted(_index_helper(n, len(self), "event"), reverse=True):
             smf_event_delete(smf_track_get_event_by_number(self._track, i + 1))
 
@@ -338,7 +353,8 @@ cdef class TrackEventList(_SMFTrackReference):
     def __next__(self):
         cdef smf_event_t *ev = smf_track_get_next_event(self._track)
         if ev:
-            return _event_reference(self, ev.track_number - 1, ev.event_number - 1)
+            return _event_reference(self, ev.track_number - 1,
+                                          ev.event_number - 1)
         else:
             raise StopIteration
 
@@ -403,10 +419,12 @@ cdef class Event(_SMFEventReference):
 
     property midi_buffer:
         def __get__(self):
-            return _binary_to_list(self._event.midi_buffer, self._event.midi_buffer_length)
+            return _binary_to_list(self._event.midi_buffer,
+                                   self._event.midi_buffer_length)
 
 
-cdef Event _event_reference(_SMFReference parent, int track_number, int event_number):
+cdef Event _event_reference(_SMFReference parent, int track_number,
+                                                  int event_number):
     """create an Event object from an existing event"""
     cdef Event ev = Event(None)
     _SMFEventReference.__init__(ev, parent, track_number, event_number)

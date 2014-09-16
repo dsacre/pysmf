@@ -33,10 +33,13 @@ cdef extern from 'smf.h':
     void smf_track_remove_from_smf(smf_track_t *track)
     void smf_track_delete(smf_track_t *track)
     smf_event_t *smf_track_get_next_event(smf_track_t *track)
-    smf_event_t *smf_track_get_event_by_number(smf_track_t *track, int event_number)
+    smf_event_t *smf_track_get_event_by_number(smf_track_t *track,
+                                               int event_number)
     void smf_track_add_event(smf_track_t *track, smf_event_t *event)
-    void smf_track_add_event_pulses(smf_track_t *track, smf_event_t *event, int pulses)
-    void smf_track_add_event_seconds(smf_track_t *track, smf_event_t *event, double seconds)
+    void smf_track_add_event_pulses(smf_track_t *track, smf_event_t *event,
+                                    int pulses)
+    void smf_track_add_event_seconds(smf_track_t *track, smf_event_t *event,
+                                     double seconds)
 
     smf_event_t *smf_event_new_from_pointer(void *midi_data, int len)
     void smf_event_delete(smf_event_t *event)
