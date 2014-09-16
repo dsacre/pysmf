@@ -65,7 +65,7 @@ pkgconfig('smf')
 setup(
     name = 'pysmf',
     version = '0.1.1',
-    author = 'Dominic Sacre',
+    author = 'Dominic Sacré',
     author_email = 'dominic.sacre@gmx.de',
     url = 'http://das.nasophon.de/pysmf/',
     description = 'a Python module for standard MIDI files, based on libsmf',
